@@ -1,0 +1,13 @@
+div.range{
+	text-align: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+#range{
+    width:70%;
+    text-align: center;
+	left:50%;
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+}

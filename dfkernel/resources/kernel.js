@@ -5,7 +5,7 @@ define(["jquery",
     '/kernelspecs/dfpython3/df-notebook/kernel.js',
     '/kernelspecs/dfpython3/df-notebook/notebook.js',
     ],
-    function($, Jupyter) {
+    function($, Jupyter, CodeCell) {
         var onload = function() {
             // reload the notebook after patching code
             var nb = Jupyter.notebook;
@@ -23,6 +23,8 @@ define(["jquery",
             nb.events.on('kernel_ready.Kernel', function(event, data) {
                 nb.invalidate_cells();
             });
+
+            CodeCell.create_scrollbar();
 
             // the kernel was already created, but $.proxy settings will
             // reference old handlers so relink them
