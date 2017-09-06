@@ -459,5 +459,6 @@ define([
     }(CodeCell.prototype.toJSON));
     return {
        create_scrollbar: create_scrollbar,
+        global_history: globalhistory
    }
 });

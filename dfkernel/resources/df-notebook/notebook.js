@@ -29,7 +29,8 @@ define([
     'notebook/js/scrollmanager',
     'notebook/js/commandpalette',
     'notebook/js/shortcuteditor',
-    '/kernelspecs/dfpython3/df-notebook/utils.js'
+    '/kernelspecs/dfpython3/df-notebook/utils.js',
+    '/kernelspecs/dfpython3/df-notebook/codecell.js'
 ], function (
     $,
     notebook,
@@ -58,7 +59,8 @@ define([
     scrollmanager,
     commandpalette,
     shortcuteditor,
-    dfutils
+    dfutils,
+    dfcodecell
 ) {
 
     var Notebook = notebook.Notebook;
@@ -224,8 +226,40 @@ define([
     };
 
     (function(_super) {
+        Notebook.prototype.toJSON = function (){
+            this.metadata.global_history = dfcodecell.global_history;
+            console.log(dfcodecell.global_history);
+            console.log(this.metadata);
+            return _super.apply(this, arguments);
+        };
+    }(Notebook.prototype.toJSON));
+
+    // (function(_super) {
+    //     Notebook.prototype.fromJSON = function (){
+    //         dfcodecell.global_history = this.metadata.global_history;
+    //         _super.apply(this, arguments);
+    //     };
+    // }(Notebook.prototype.fromJSON));
+
+    (function(_super) {
+        Notebook.prototype.delete_cell = function (index) {
+            dfcodecell.global_history.push({type:'delete',content:this.get_selected_cell(),location:index});
+          _super.apply(this, arguments);
+        };
+        }(Notebook.prototype.delete_cell));
+
+    (function(_super) {
+        Notebook.prototype.undelete_cell = function () {
+            dfcodecell.global_history.push({type:'undelete',content:this.undelete_backup_stack,location:this.undelete_backup});
+          _super.apply(this, arguments);
+        };
+        }(Notebook.prototype.undelete_cell));
+
+
+    (function(_super) {
         Notebook.prototype.paste_cell_above = function () {
             this.remap_pasted_ids();
+            dfcodecell.global_history.push({type:'paste_above',content:this.clipboard,location:this.get_selected_cell().uuid});
             _super.apply(this, arguments);
         };
     }(Notebook.prototype.paste_cell_above));
@@ -233,6 +267,7 @@ define([
     (function(_super) {
         Notebook.prototype.paste_cell_below = function () {
             this.remap_pasted_ids();
+            dfcodecell.global_history.push({type:'paste_below',content:this.clipboard,location:this.get_selected_cell().uuid});
             _super.apply(this, arguments);
         };
     }(Notebook.prototype.paste_cell_below));
@@ -240,6 +275,7 @@ define([
     (function(_super) {
         Notebook.prototype.paste_cell_replace = function () {
             this.remap_pasted_ids();
+            dfcodecell.global_history.push({type:'paste_replace',content:this.clipboard,location:this.get_selected_cell().uuid});
             _super.apply(this, arguments);
         };
     }(Notebook.prototype.paste_cell_replace));
