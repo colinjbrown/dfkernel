@@ -16,6 +16,14 @@ class DataflowHistoryManager(object):
         # self.flags['silent'] = True
 
     def update_code(self, key, code):
+        store_tag = []
+        for tag in self.shell.user_ns.__links__:
+            if self.shell.user_ns.__links__[tag] == key:
+                store_tag.append(tag)
+        if store_tag:
+            del self.shell.user_ns.__rev_links__[key]
+            for name in store_tag:
+                del self.shell.user_ns.__links__[name]
         # print("CALLING UPDATE CODE", key)
         if key not in self.code_cache or self.code_cache[key] != code:
             self.code_cache[key] = code
