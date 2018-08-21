@@ -575,6 +575,8 @@ class ZMQInteractiveShell(ipykernel.zmqshell.ZMQInteractiveShell):
                 # self.execution_count += 1
 
             if store_history:
+                result.deleted_cells = self.dataflow_history_manager.deleted_cells
+                self.dataflow_history_manager.deleted_cells = []
                 cells = []
                 nodes = []
                 for uid in self.dataflow_history_manager.sorted_keys():
@@ -587,6 +589,8 @@ class ZMQInteractiveShell(ipykernel.zmqshell.ZMQInteractiveShell):
                 result.nodes = nodes
                 result.cells = cells
                 result.links = self.dataflow_history_manager.raw_semantic_upstream(uuid)
+                result.deleted_cells = self.dataflow_history_manager.deleted_cells
+                self.dataflow_history_manager.deleted_cells = []
                 result.internal_nodes = internalnodes
 
                 result.imm_upstream_deps = self.dataflow_history_manager.get_semantic_upstream(uuid)
