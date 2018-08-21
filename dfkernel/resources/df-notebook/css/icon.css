@@ -5,7 +5,6 @@ div.icon_status {
     padding-left: 1px;
     padding-right: 1px;
     padding-top: 0.4ex;
-    width : 1em;
 
     font-family: FontAwesome;
     font-style: normal;
@@ -65,16 +64,16 @@ div.prompt_container {
     justify-content: space-between;
     align-items: flex-start;
     text-align: right;
+    width: 15vw;
 }
 
 div.output_prompt {
-    min-width : 15ex;
-    max-width: 15vw;
+    width: 15vw;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-div.out_prompt_overlay {
-    min-width : 10em;
+div.output_area .prompt {
+    width: 15vw;
 }
