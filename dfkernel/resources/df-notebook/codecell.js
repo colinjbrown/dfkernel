@@ -136,6 +136,7 @@ define([
                 this.input.prepend(this.prompt_container);
             }
             this.set_icon_status("new");
+            this.input.prepend(this.icon_status);
             var that = this;
             this.code_mirror.on('change', function () {
                 var change_status_for_edited_cell = {
