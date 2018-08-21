@@ -3,7 +3,15 @@ from collections.abc import KeysView, ItemsView, ValuesView, MutableMapping
 from dfkernel.dflink import LinkedResult
 import itertools
 
+class DataflowCacheException(Exception):
+    def __init__(self, cid):
+        self.cid = cid
+
+    def __str__(self):
+        return "Cell '{}' has not yet been computed".format(self.cid)
+
 class DataflowHistoryManager(object):
+    deleted_cells = []
     storeditems = []
     tup_flag = False
 
@@ -11,6 +19,7 @@ class DataflowHistoryManager(object):
         self.shell = shell
         self.flags = dict(kwargs)
         self.auto_update_flags = {}
+        self.force_cached_flags = {}
         # self.flags['silent'] = True
         self.clear()
 
@@ -20,12 +29,32 @@ class DataflowHistoryManager(object):
 
     def update_code(self, key, code):
         # print("CALLING UPDATE CODE", key)
-        if key not in self.code_cache or self.code_cache[key] != code:
+        # if code is empty, remove the code_cache, remove links
+        if code == '' and key in self.value_cache:
+            self.set_stale(key)
+            del self.value_cache[key]
+            del self.code_cache[key]
+            for child in self.all_downstream(key):
+                self.remove_dependencies(key, child)
+                self.remove_semantic_dependencies(key, child)
+            for parent in self.all_upstream(key):
+                self.remove_dependencies(key, parent)
+                self.remove_semantic_dependencies(key, parent)
+            self.shell.user_ns._reset_cell(key)
+            self.deleted_cells.append(key)
+        elif key not in self.code_cache or self.code_cache[key] != code:
+            # clear out the old __links__ and __rev_links__ (if exist)
+            if self.shell.user_ns.__rev_links__[key]:
+                for tag in self.shell.user_ns.__rev_links__[key]:
+                    del self.shell.user_ns.__links__[tag]
+                del self.shell.user_ns.__rev_links__[key]
+            self.func_cached[key] = False
             self.code_cache[key] = code
             self.set_stale(key)
-            self.func_cached[key] = False
             if key not in self.auto_update_flags:
                 self.auto_update_flags[key] = False;
+            if key not in self.force_cached_flags:
+                self.force_cached_flags[key] = False;
 
     def update_codes(self, code_dict):
         for key, val in code_dict.items():
@@ -33,6 +62,9 @@ class DataflowHistoryManager(object):
 
     def update_auto_update(self, flags):
         self.auto_update_flags.update(flags)
+
+    def update_force_cached(self, flags):
+        self.force_cached_flags.update(flags)
 
     def set_stale(self, key):
         self.code_stale[key] = True
@@ -206,6 +238,13 @@ class DataflowHistoryManager(object):
     def get_item(self, k):
         self.stale_check(k)
         self.update_dependencies(k, self.shell.uuid)
+
+        # force recompute
+        if self.force_cached_flags[k]:
+            if k not in self.value_cache:
+                raise DataflowCacheException(k)
+            return self.value_cache[k]
+
         # check if we need to recompute
         if not self.is_stale(k):
             return self.value_cache[k]

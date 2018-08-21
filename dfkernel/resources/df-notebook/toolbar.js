@@ -22,6 +22,7 @@ define([
         var dfdiv = $('<div class="dftoolbar">');
         update_inputs(dfdiv, cell);
         update_outputs(dfdiv, cell);
+        add_force_cached_button(dfdiv, cell);
         add_auto_update_button(dfdiv, cell);
         $(div).append(dfdiv);
     };
@@ -47,23 +48,22 @@ define([
                 var notebook = cell.notebook;
                 var container = $(div);
                 var input_div = $('<div class="dftoolbar-inline"/>');
-                var label = $('<i class="fa-chevron-circle-up fa">');
-                var links = $('<div class="dftoolbar-links">');
-                input_div.append(label, links);
-                upstream_pairs.forEach(
-                    function (v_arr) {
-                        links.append(add_variable(v_arr[0], v_arr[1], notebook));
-                    });
                 var highlight = $('<button/>')
                     .addClass("btn btn-default btn-xs")
                     .attr('title','Highlight Upstream Cells')
-                    .append($('<i class="fa-angle-double-up fa">'));
+                    .append($('<i class="fa-chevron-circle-up fa">'));
                 highlight.click(function() {
                     var upstreams = cell.dfgraph.all_upstream_cell_ids(cell.uuid);
                     notebook.select_cells_by_id(upstreams);
                     return false;
                 });
-                links.append(highlight);
+                input_div.append(highlight);
+                var links = $('<div class="dftoolbar-links dftoolbar-inputs">');
+                input_div.append(links);
+                upstream_pairs.forEach(
+                    function (v_arr) {
+                        links.append(add_variable(v_arr[0], v_arr[1], notebook));
+                    });
                 container.append(input_div);
             }
         }
@@ -76,23 +76,23 @@ define([
                 var container = $(div);
                 var notebook = cell.notebook;
                 var output_div = $('<div class="dftoolbar-inline"/>');
-                var label = $('<i class="fa-chevron-circle-down fa">');
-                var links = $('<div class="dftoolbar-links">');
-                output_div.append(label, links);
-                output_names.forEach(
-                    function (v) {
-                        links.append(add_variable(v));
-                    });
                 var highlight = $('<button/>')
                     .addClass("btn btn-default btn-xs")
                     .attr('title', 'Highlight Downstream Cells')
-                    .append($('<i class="fa-angle-double-down fa">'));
+                    .append($('<i class="fa-chevron-circle-down fa">'));
                 highlight.click(function() {
                     var downstreams = cell.dfgraph.all_downstream(cell.uuid);
                     notebook.select_cells_by_id(downstreams);
                     return false;
                 });
-                links.append(highlight);
+                output_div.append(highlight);
+
+                var links = $('<div class="dftoolbar-links dftoolbar-outputs">');
+                output_div.append(links);
+                output_names.forEach(
+                    function (v) {
+                        links.append(add_variable(v));
+                    });
                 container.append(output_div);
             }
         }
@@ -101,20 +101,35 @@ define([
     var add_auto_update_button = function(div, cell) {
         var container = $(div);
         var refresh = $('<button/>')
-            .addClass("btn btn-default btn-xs");
-        var refresh_icon = $('<span class="fa-stack">' +
-                          '<i class="fa fa-refresh fa-stack-1x"></i>' +
-                          '</span>');
-        if (!(cell.auto_update)) {
-            refresh_icon.addClass('crossed-out');
+            .addClass("btn btn-default btn-xs")
+            .attr('title', 'Auto-Refresh on Upstream Update')
+            .append($('<i class="fa-refresh fa">'));
+        if (cell.auto_update) {
+            refresh.addClass('active');
         }
-        refresh.append(refresh_icon);
         refresh.click(function() {
-            refresh_icon.toggleClass('crossed-out');
-            cell.auto_update = !(refresh_icon.hasClass('crossed-out'));
+            refresh.toggleClass('active');
+            cell.auto_update = refresh.hasClass('active');
             return false;
         });
         container.append(refresh);
+    };
+
+    var add_force_cached_button = function(div, cell) {
+        var container = $(div);
+        var prompt = $('<button/>')
+            .addClass("btn btn-default btn-xs")
+            .attr('title', 'Only Update Explicitly')
+            .append($('<i class="fa-database fa">'));
+        if (cell.force_cached) {
+            prompt.addClass('active');
+        }
+        prompt.click(function() {
+            prompt.toggleClass('active');
+            cell.force_cached = prompt.hasClass('active');
+            return false;
+        });
+        container.append(prompt);
     };
 
     var register = function (notebook) {
