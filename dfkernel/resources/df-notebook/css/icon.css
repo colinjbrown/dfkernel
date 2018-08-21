@@ -64,4 +64,16 @@ div.prompt_container {
     justify-content: space-between;
     align-items: flex-start;
     text-align: right;
+    width: 15vw;
+}
+
+div.output_prompt {
+    width: 15vw;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+div.output_area .prompt {
+    width: 15vw;
 }
