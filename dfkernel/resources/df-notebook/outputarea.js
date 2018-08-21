@@ -69,15 +69,5 @@ define(['jquery',
         }
     };
 
-    (function(_super) {
-        OutputArea.prototype.create_output_area = function () {
-            var oa = _super.call(this, arguments);
-            if (this.prompt_area) {
-                oa.prepend($('<div/>').addClass('icon_status'));
-            }
-            return oa;
-        };
-    }(OutputArea.prototype.create_output_area));
-
     return {OutputArea: OutputArea}
 });
