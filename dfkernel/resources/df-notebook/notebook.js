@@ -121,7 +121,6 @@ define([
                     }
                 }
             }
-
         }
         return code_dict;
     };
@@ -344,7 +343,7 @@ define([
         Notebook.prototype.delete_cells = function (indices) {
             //create a list of the horizontal lines for deleted cells
             if( typeof this.metadata.hl_list == 'undefined' && !(this.metadata.hl_list instanceof Array) ) {
-                this.metadata.hl_list = [];
+                this.metadata.hl_list = {};
             }
             return _super.call(this, indices);
         };
@@ -364,6 +363,7 @@ define([
                     var index = this.find_cell_index(horizontal_line);
                     //undelete the corresponding cell
                     new_cell = insert(cell_data.cell_type, index);
+                    cell_data.metadata.cell_status = 'undelete-'+cell_data.metadata.cell_status;
                     new_cell.fromJSON(cell_data);
                     //remove the horizontal line
                     var ce = this.get_cell_element(index);
@@ -381,6 +381,10 @@ define([
             var length = this.undelete_backup_stack[j].cells.length;
             for(i=0; i<length ; i++) {
                 var uuid = this.undelete_backup_stack[j].cells[i].execution_count.toString(16);
+                var cell_status = this.undelete_backup_stack[j].cells[i].metadata.cell_status;
+                if(cell_status.indexOf('saved') === -1) {
+                    this.undelete_backup_stack[j].cells[i].metadata.cell_status = 'undelete-'+cell_status;
+                }
                 //remove the corresponding horizontal line if exist
                 if (this.metadata.hl_list[uuid]) {
                     var horizontal_line = this.metadata.hl_list[uuid];
