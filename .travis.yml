@@ -89,17 +89,11 @@ matrix:
           dist: xenial
           sudo: true
           env: GROUP=python
-        - python: 3.7
-          dist: xenial
-          sudo: true
+        - python: "3.7-dev"
           env: GROUP=js/base
-        - python: 3.7
-          dist: xenial
-          sudo: true
+        - python: "3.7-dev"
           env: GROUP=js/services
-        - python: 3.7
-          dist: xenial
-          sudo: true
+        - python: "3.7-dev"
           env: GROUP=js/dataflow
 
 after_success:

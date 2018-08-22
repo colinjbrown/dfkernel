@@ -124,6 +124,17 @@ define([
 
             var _super_result = _super.apply(this, arguments);
             this.icon_status = $('<div></div>');
+
+            this.prompt_container = this.input.find('.prompt_container')[0];
+            if (this.prompt_container) {
+                this.prompt_container.prepend(this.icon_status);
+            } else {
+                var prompt = this.input.find('.input_prompt')[0];
+                var run_this_cell = this.input.find('.run_this_cell')[0];
+                this.prompt_container = $('<div/>').addClass('prompt_container')
+                    .append(this.icon_status, run_this_cell, prompt);
+                this.input.prepend(this.prompt_container);
+            }
             this.set_icon_status("new");
             this.input.prepend(this.icon_status);
             var that = this;
@@ -146,18 +157,18 @@ define([
                     });
                 //only if the input is not empty
                 function update_icons(status_map, check_prefix, status_prefix) {
-                    console.log(that.metadata.cell_status);
                     if (that.metadata.cell_status in status_map) {
-                        console.log(status_map[that.metadata.cell_status]);
                         that.set_icon_status( status_map[that.metadata.cell_status] );
                     }
                     var downstream = that.dfgraph.all_downstream(that.uuid);
                     for(var i = 0;i<downstream.length;i++) {
                         var cell = Jupyter.notebook.get_code_cell(downstream[i]);
-                        if (cell.metadata.cell_status === check_prefix + 'success') {
-                            cell.set_icon_status(status_prefix + 'success');
-                        } else if (cell.metadata.cell_status === check_prefix + 'error') {
-                            cell.set_icon_status(status_prefix + 'error');
+                        if (cell !== null && cell.get_text() === cell.code_cached) {
+                            if (cell.metadata.cell_status === check_prefix + 'success') {
+                                cell.set_icon_status(status_prefix + 'success');
+                            } else if (cell.metadata.cell_status === check_prefix + 'error') {
+                                cell.set_icon_status(status_prefix + 'error');
+                            }
                         }
                     }
 
@@ -285,8 +296,6 @@ define([
                 that.events.off('finished_iopub.Kernel', handleFinished);
             }
         }
-        //set input field icon to success if cell is executed
-        this.set_icon_status('success');
         this.events.on('finished_iopub.Kernel', handleFinished);
     };
 
@@ -331,7 +340,10 @@ define([
             }
             if (msg.metadata.status != "error") {
                 var that = cell;
+
+                //set input field icon to success if cell is executed
                 cell.set_icon_status('success');
+
                 /** Rename content for general readability*/
                 var nodes = msg.content.nodes;
                 var uplinks = msg.content.links;
@@ -350,7 +362,7 @@ define([
 
                 }
                 that.cell_imm_downstream_deps = msg.content.imm_downstream_deps;
-                //set input field icon to success if cell is executed
+
             }
             else if(msg.metadata.status == "error") {
                 //set input field icon to error if cell returns error
@@ -438,6 +450,9 @@ define([
 
             _super.call(this, data);
             this.code_cached = this.get_text();
+            if(this.metadata.cell_status && this.metadata.cell_status.indexOf('undelete-') !== -1) {
+                this.metadata.cell_status = this.metadata.cell_status.slice(9,);
+            }
             this.set_icon_status(this.metadata.cell_status || 'edited-new');
             this.uuid = uuid;
             this.element.attr('id', this.uuid);
