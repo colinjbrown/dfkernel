@@ -191,7 +191,7 @@ define([
             var nb = Jupyter.notebook;
             //add event to be notified when cell is deleted
             that.events.on('delete.Cell', function(event,data) {
-                if (data['cell'] === that) {
+                if (data['cell'] === that && data['cell'].cell_type === 'code') {
                     var horizontal_line = nb.insert_cell_above("raw",data['index']);
                     horizontal_line.inner_cell.height(1).css("backgroundColor","red");
                     horizontal_line.inner_cell[0].childNodes[1].remove();
