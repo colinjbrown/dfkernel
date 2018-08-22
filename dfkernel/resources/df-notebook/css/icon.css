@@ -57,3 +57,23 @@ div.icon_status {
 .df-error::before {
   color : #ff0000;
 }
+
+div.prompt_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: right;
+    width: 15vw;
+}
+
+div.output_prompt {
+    width: 15vw;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+div.output_area .prompt {
+    width: 15vw;
+}

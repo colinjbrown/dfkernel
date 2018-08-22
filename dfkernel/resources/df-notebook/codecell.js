@@ -60,8 +60,18 @@ define([
 
             var _super_result = _super.apply(this, arguments);
             this.icon_status = $('<div></div>');
+
+            this.prompt_container = this.input.find('.prompt_container')[0];
+            if (this.prompt_container) {
+                this.prompt_container.prepend(this.icon_status);
+            } else {
+                var prompt = this.input.find('.input_prompt')[0];
+                var run_this_cell = this.input.find('.run_this_cell')[0];
+                this.prompt_container = $('<div/>').addClass('prompt_container')
+                    .append(this.icon_status, run_this_cell, prompt);
+                this.input.prepend(this.prompt_container);
+            }
             this.set_icon_status("new");
-            this.input.prepend(this.icon_status);
             var that = this;
             this.code_mirror.on('change', function () {
                 var change_status_for_edited_cell = {
