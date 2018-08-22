@@ -450,6 +450,9 @@ define([
 
             _super.call(this, data);
             this.code_cached = this.get_text();
+            if(this.metadata.cell_status.indexOf('undelete-') !== -1) {
+                this.metadata.cell_status = this.metadata.cell_status.slice(9,);
+            }
             this.set_icon_status(this.metadata.cell_status);
             this.uuid = uuid;
             this.element.attr('id', this.uuid);
