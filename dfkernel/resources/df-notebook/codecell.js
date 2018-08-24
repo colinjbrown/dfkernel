@@ -76,6 +76,9 @@ define([
                 var revert_status_for_unedited_cell = {};
                 Object.keys(change_status_for_edited_cell).forEach(
                     function(k) {
+                        if(k === 'saved-success-first-load' || k === 'saved-error-first-load') {
+                            return;
+                        }
                         var v = change_status_for_edited_cell[k];
                         revert_status_for_unedited_cell[v] = k;
                     });
@@ -367,6 +370,18 @@ define([
                     out.execution_count = data.execution_count;
                 }
             });
+            //set correct cell_status for saved codecell
+            if (data.cell_type === 'code') {
+                if(data.metadata.cell_status == 'success') {
+                    data.metadata.cell_status = "saved-success-first-load";
+                } else if(data.metadata.cell_status == 'error') {
+                    data.metadata.cell_status = "saved-error-first-load";
+                } else if(data.metadata.cell_status == 'edited-success') {
+                    data.metadata.cell_status = 'edited-saved-success'
+                } else if(data.metadata.cell_status == 'edited-error') {
+                    data.metadata.cell_status = 'edited-saved-error';
+                }
+            }
             return data;
         }
     }(CodeCell.prototype.toJSON));
@@ -384,7 +399,9 @@ define([
                 "edited-saved-success" : ["edited-saved-success df-unverified", "Edited saved success"],
                 "executing" : ["executing df-unverified", "Executing"],
                 "saved-error" : ["saved-error df-unverified", "Saved error"],
-                "edited-saved-error" : ["edited-saved-error df-unverified", "Edited saved error"]
+                "edited-saved-error" : ["edited-saved-error df-unverified", "Edited saved error"],
+                "saved-success-first-load" : ["saved-success df-unverified", "Saved success"],
+                "saved-error-first-load" : ["saved-error df-unverified", "Saved error"]
             };
 
         this.metadata.cell_status = cell_status;
